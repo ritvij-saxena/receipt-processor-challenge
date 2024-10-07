@@ -1,5 +1,6 @@
 package com.fetch_rewards_challenge.receipt_processor.service.impl;
 
+import com.fetch_rewards_challenge.receipt_processor.exception.InvalidReceiptException;
 import com.fetch_rewards_challenge.receipt_processor.model.Item;
 import com.fetch_rewards_challenge.receipt_processor.model.Receipt;
 import com.fetch_rewards_challenge.receipt_processor.repository.ReceiptRepository;
@@ -25,20 +26,20 @@ public class ReceiptServiceImpl implements ReceiptService {
 
     @Override
     public CompletableFuture<String> processReceipt(Receipt receipt) {
-        String id = UUID.randomUUID().toString();
-        receiptRepository.setProcessingState(id, true);
+        // Check if items are present in the receipt
+        if (receipt.getItems() == null || receipt.getItems().isEmpty()) {
+            throw new InvalidReceiptException("Receipt must contain at least one item.");
+        }
 
-        // Start asynchronous calculation of points and return the future ID
-        CompletableFuture.runAsync(() -> {
-            try {
-                calculatePoints(receipt, id);
-            } catch (Exception e) {
-                receiptRepository.setProcessingState(id, false);
-                throw new RuntimeException("Error calculating points", e);
-            }
-        });
+        String receiptId = UUID.randomUUID().toString();
+        receiptRepository.setProcessingState(receiptId, true);
 
-        return CompletableFuture.completedFuture(id);
+        BigDecimal points = calculatePoints(receipt);
+
+        receiptRepository.saveReceipt(receiptId, receipt, points);
+        receiptRepository.setProcessingState(receiptId, false);
+
+        return CompletableFuture.completedFuture(receiptId);
     }
 
     @Override
@@ -57,18 +58,14 @@ public class ReceiptServiceImpl implements ReceiptService {
     }
 
     @Async
-    public void calculatePoints(Receipt receipt, String id) {
+    public BigDecimal calculatePoints(Receipt receipt) {
         BigDecimal points = BigDecimal.ZERO;
-
         points = points.add(calculateRetailerPoints(receipt.getRetailer()));
         points = points.add(calculateTotalPoints(receipt.getTotal()));
         points = points.add(calculateItemPoints(receipt.getItems()));
         points = points.add(calculateDayPoints(receipt.getPurchaseDate()));
         points = points.add(calculateTimePoints(receipt.getPurchaseTime()));
-
-        // Save points to the repository and mark processing as completed
-        receiptRepository.saveReceipt(id, receipt, points);
-        receiptRepository.setProcessingState(id, false);
+        return points;
     }
 
     // Calculate points based on retailer name

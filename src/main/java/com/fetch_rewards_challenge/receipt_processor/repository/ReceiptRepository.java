@@ -4,6 +4,7 @@ import com.fetch_rewards_challenge.receipt_processor.model.Receipt;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
@@ -14,9 +15,10 @@ public class ReceiptRepository {
     private final ConcurrentHashMap<String, Boolean> processingStates = new ConcurrentHashMap<>();
 
     // Save receipt and its points
-    public void saveReceipt(String id, Receipt receipt, BigDecimal points) {
+    public CompletableFuture<String> saveReceipt(String id, Receipt receipt, BigDecimal points) {
         receipts.put(id, receipt);
         receiptPoints.put(id, points);
+        return CompletableFuture.completedFuture(id);
     }
 
     // Retrieve points by receipt ID

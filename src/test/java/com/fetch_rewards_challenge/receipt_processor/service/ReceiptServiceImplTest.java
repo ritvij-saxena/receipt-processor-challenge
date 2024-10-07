@@ -1,5 +1,6 @@
 package com.fetch_rewards_challenge.receipt_processor.service;
 
+import com.fetch_rewards_challenge.receipt_processor.exception.InvalidReceiptException;
 import com.fetch_rewards_challenge.receipt_processor.model.Item;
 import com.fetch_rewards_challenge.receipt_processor.model.Receipt;
 import com.fetch_rewards_challenge.receipt_processor.repository.ReceiptRepository;
@@ -9,14 +10,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 public class ReceiptServiceImplTest {
 
@@ -37,8 +36,16 @@ public class ReceiptServiceImplTest {
         receipt.setRetailer("Target");
         receipt.setPurchaseDate("2022-01-01");
         receipt.setPurchaseTime("13:01");
+
+        List<Item> items = Arrays.asList(
+                new Item("Mountain Dew 12PK", "6.49"),
+                new Item("Emils Cheese Pizza", "12.25"),
+                new Item("Knorr Creamy Chicken", "1.26"),
+                new Item("Doritos Nacho Cheese", "3.35"),
+                new Item("   Klarbrunn 12-PK 12 FL OZ  ", "12.00")
+        );
+        receipt.setItems(items);
         receipt.setTotal("35.35");
-        receipt.setItems(new ArrayList<>());
 
         CompletableFuture<String> idFuture = receiptService.processReceipt(receipt);
 
@@ -52,23 +59,23 @@ public class ReceiptServiceImplTest {
     }
 
     @Test
-    public void calculatePoints_ShouldReturnZero_WhenNoItems() {
+    public void calculatePoints_ShouldThrowInvalidReceiptException_WhenNoItems() {
+        // Create a receipt with no items
         Receipt receipt = new Receipt();
         receipt.setRetailer("Target");
         receipt.setPurchaseDate("2022-01-01");
         receipt.setPurchaseTime("13:01");
-        receipt.setTotal("35.35");
-        receipt.setItems(new ArrayList<>()); // No items
+        receipt.setItems(Collections.emptyList());  // No items
+        receipt.setTotal("0.00");
 
-        String id = UUID.randomUUID().toString();
+        // Expect an InvalidReceiptException to be thrown
+        InvalidReceiptException exception = assertThrows(InvalidReceiptException.class, () -> {
+            receiptService.processReceipt(receipt);
+        });
 
-        // Simulate the async processing
-        CompletableFuture<String> futureId = receiptService.processReceipt(receipt);
-
-        // Wait for the result
-        String generatedId = futureId.join();
-        assertNotNull(generatedId);
-
-        verify(receiptRepository).saveReceipt(anyString(), eq(receipt), eq(BigDecimal.ZERO));
+        // Assert the exception message
+        assertEquals("Receipt must contain at least one item.", exception.getMessage());
     }
+
+
 }
