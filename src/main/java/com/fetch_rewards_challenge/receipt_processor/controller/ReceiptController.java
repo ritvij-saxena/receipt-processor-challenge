@@ -29,11 +29,11 @@ public class ReceiptController {
     // POST endpoint to process the receipt
     @PostMapping("/process")
     public CompletableFuture<ResponseEntity<String>> processReceipt(@Valid @RequestBody Receipt receipt) {
-        CompletableFuture<String> id = receiptService.processReceipt(receipt); // Process receipt and get ID
         CompletableFuture<String> receiptIdFuture = receiptService.processReceipt(receipt);
         return receiptIdFuture.thenApply(receiptId ->
                 ResponseEntity.status(HttpStatus.CREATED).body(receiptId))
-                .exceptionally(ex -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing receipt"));
+                .exceptionally(ex -> ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Invalid receipt submitted"));
     }
 
     // GET endpoint to retrieve points by receipt ID

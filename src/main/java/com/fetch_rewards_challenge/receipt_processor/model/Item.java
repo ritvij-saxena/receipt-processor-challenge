@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 @Data
 @AllArgsConstructor
@@ -14,12 +13,11 @@ public class Item {
     @NotBlank(message = "Short description cannot be empty")
     private String shortDescription;
 
-    @NotNull(message = "Price cannot be null")
+    @NotBlank(message = "Price cannot be empty")
     private String price;
 
     @Override
     public String toString() {
-        return "Item: " + shortDescription.trim() + ", Price: " + String.format("%.2f", price);
+        return "Item: " + shortDescription.trim() + ", Price: " + price;
     }
-
 }

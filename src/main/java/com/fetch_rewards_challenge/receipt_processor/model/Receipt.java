@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Data
@@ -28,7 +27,6 @@ public class Receipt {
     private List<Item> items;
 
     @NotBlank(message = "Total cannot be empty")
-    @PositiveOrZero(message = "Total cannot be negative")
     private String total;
 
     @Override
@@ -46,4 +44,3 @@ public class Receipt {
         return sb.toString();
     }
 }
-

@@ -29,9 +29,16 @@ public class ReceiptServiceImpl implements ReceiptService {
         receiptRepository.setProcessingState(id, true);
 
         // Start asynchronous calculation of points and return the future ID
-        CompletableFuture.runAsync(() -> calculatePoints(receipt, id));
+        CompletableFuture.runAsync(() -> {
+            try {
+                calculatePoints(receipt, id);
+            } catch (Exception e) {
+                receiptRepository.setProcessingState(id, false);
+                throw new RuntimeException("Error calculating points", e);
+            }
+        });
 
-        return CompletableFuture.completedFuture(id);  // Return the ID immediately
+        return CompletableFuture.completedFuture(id);
     }
 
     @Override
@@ -88,9 +95,8 @@ public class ReceiptServiceImpl implements ReceiptService {
     private BigDecimal calculateItemPoints(List<Item> items) {
         BigDecimal points = BigDecimal.ZERO;
 
-        // Points for number of items
         if (items != null && !items.isEmpty()) {
-            points = points.add(BigDecimal.valueOf((items.size() / 2) * 5L));
+            points = points.add(BigDecimal.valueOf((items.size() / 2) * 5));
             for (Item item : items) {
                 points = points.add(calculateItemDescriptionPoints(item));
             }
@@ -99,7 +105,6 @@ public class ReceiptServiceImpl implements ReceiptService {
         return points;
     }
 
-    // Calculate points based on item description length
     private BigDecimal calculateItemDescriptionPoints(Item item) {
         String description = item.getShortDescription().trim();
         BigDecimal price = new BigDecimal(item.getPrice());
@@ -112,13 +117,11 @@ public class ReceiptServiceImpl implements ReceiptService {
         return points;
     }
 
-    // Calculate points based on purchase date
     private BigDecimal calculateDayPoints(String purchaseDate) {
         String day = purchaseDate.split("-")[2];
         return (Integer.parseInt(day) % 2 != 0) ? BigDecimal.valueOf(6) : BigDecimal.ZERO;
     }
 
-    // Calculate points based on purchase time
     private BigDecimal calculateTimePoints(String purchaseTime) {
         String[] timeParts = purchaseTime.split(":");
         int hour = Integer.parseInt(timeParts[0]);

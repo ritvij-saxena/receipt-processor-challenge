@@ -31,10 +31,12 @@ public class ReceiptControllerTest {
 
     @Test
     public void processReceipt_ShouldReturnId() throws Exception {
-        Receipt receipt = new Receipt(); // Fill this with test data
+        Receipt receipt = new Receipt();
+        // Set fields like retailer, purchaseDate, etc., if needed for the receipt object.
         String id = "7fb1377b-b223-49d9-a31a-5a02701dd310";
 
-        when(receiptService.processReceipt(any(Receipt.class))).thenReturn(CompletableFuture.completedFuture(id));
+        when(receiptService.processReceipt(any(Receipt.class)))
+                .thenReturn(CompletableFuture.completedFuture(id));
 
         mockMvc.perform(post("/receipts/process")
                 .contentType("application/json")
@@ -52,8 +54,9 @@ public class ReceiptControllerTest {
 
         mockMvc.perform(get("/receipts/{id}/points", id))
                 .andExpect(status().isOk())
-                .andExpect(content().json("{\"points\": 32}"));
+                .andExpect(content().json("{\"points\": 32}")); // Return a JSON object with "points"
     }
+
 
     @Test
     public void processReceipt_ShouldReturnBadRequest_ForEmptyReceipt() throws Exception {
@@ -64,6 +67,7 @@ public class ReceiptControllerTest {
                 .andExpect(content().string("Invalid receipt submitted"));
     }
 
+
     @Test
     public void processReceipt_ShouldReturnBadRequest_ForInvalidJson() throws Exception {
         mockMvc.perform(post("/receipts/process")
@@ -72,4 +76,5 @@ public class ReceiptControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Invalid receipt submitted"));
     }
+
 }

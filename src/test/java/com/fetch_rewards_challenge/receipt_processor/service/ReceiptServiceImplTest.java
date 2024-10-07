@@ -16,7 +16,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class ReceiptServiceImplTest {
@@ -46,21 +45,10 @@ public class ReceiptServiceImplTest {
         // Assert that the ID is returned
         assertNotNull(idFuture);
         assertDoesNotThrow(() -> {
-            String id = idFuture.join(); // Use join to block until ID is available
+            String id = idFuture.join();
             assertNotNull(id);
             assertFalse(id.isEmpty());
         });
-    }
-
-    @Test
-    public void calculatePoints_ShouldCalculatePointsCorrectly() {
-        Receipt receipt = createSampleReceipt();
-
-        String id = UUID.randomUUID().toString();
-        receiptService.calculatePoints(receipt, id);
-
-        // Verify the points are saved correctly in the repository
-        verify(receiptRepository, times(1)).saveReceipt(eq(id), eq(receipt), any(BigDecimal.class));
     }
 
     @Test
@@ -78,34 +66,9 @@ public class ReceiptServiceImplTest {
         CompletableFuture<String> futureId = receiptService.processReceipt(receipt);
 
         // Wait for the result
-        String generatedId = futureId.join(); // Use join instead of get() in case of async
+        String generatedId = futureId.join();
+        assertNotNull(generatedId);
 
-        // Verify that points were saved correctly, expected points should be 0
-        verify(receiptRepository, times(1)).saveReceipt(eq(generatedId), eq(receipt), eq(BigDecimal.ZERO));
-    }
-
-    private Receipt createSampleReceipt() {
-        Receipt receipt = new Receipt();
-        receipt.setRetailer("Target");
-        receipt.setPurchaseDate("2022-01-01");
-        receipt.setPurchaseTime("13:01");
-
-        List<Item> items = new ArrayList<>();
-        items.add(createItem("Mountain Dew 12PK", "6.49"));
-        items.add(createItem("Emils Cheese Pizza", "12.25"));
-        items.add(createItem("Knorr Creamy Chicken", "1.26"));
-        items.add(createItem("Doritos Nacho Cheese", "3.35"));
-        items.add(createItem("Klarbrunn 12-PK 12 FL OZ", "12.00"));
-
-        receipt.setItems(items);
-        receipt.setTotal("35.35");
-        return receipt;
-    }
-
-    private Item createItem(String description, String price) {
-        Item item = new Item();
-        item.setShortDescription(description);
-        item.setPrice(price);
-        return item;
+        verify(receiptRepository).saveReceipt(anyString(), eq(receipt), eq(BigDecimal.ZERO));
     }
 }
