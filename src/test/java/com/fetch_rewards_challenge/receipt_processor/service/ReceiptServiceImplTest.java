@@ -1,8 +1,9 @@
-package com.fetch_rewards_challenge.receipt_processor.service.impl;
+package com.fetch_rewards_challenge.receipt_processor.service;
 
 import com.fetch_rewards_challenge.receipt_processor.model.Item;
 import com.fetch_rewards_challenge.receipt_processor.model.Receipt;
 import com.fetch_rewards_challenge.receipt_processor.repository.ReceiptRepository;
+import com.fetch_rewards_challenge.receipt_processor.service.impl.ReceiptServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -13,7 +14,15 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ReceiptServiceImplTest {
 
@@ -28,7 +37,7 @@ public class ReceiptServiceImplTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         // Klarbrunn receipt (from provided example)
         receiptWithKlarbrunn = new Receipt();
@@ -72,8 +81,41 @@ public class ReceiptServiceImplTest {
 
     @Test
     public void testProcessReceipt() {
-        String receiptId = "receipt-1";
         receiptService.processReceipt(receiptWithKlarbrunn);
         verify(receiptRepository, times(1)).setProcessingState(anyString(), eq(true));
+    }
+
+    @Test
+    public void testIsProcessing_True() {
+        String receiptId = "receipt-1";
+        when(receiptRepository.isProcessing(receiptId)).thenReturn(true);
+
+        boolean isProcessing = receiptService.isProcessing(receiptId);
+        assertTrue(isProcessing);
+        verify(receiptRepository, times(1)).isProcessing(receiptId);
+    }
+
+    @Test
+    public void testIsProcessing_False() {
+        String receiptId = "receipt-2";
+        when(receiptRepository.isProcessing(receiptId)).thenReturn(false);
+
+        boolean isProcessing = receiptService.isProcessing(receiptId);
+        assertFalse(isProcessing);
+        verify(receiptRepository, times(1)).isProcessing(receiptId);
+    }
+
+    @Test
+    public void testProcessReceipt_2() throws InterruptedException {
+        // Act: Process the receipt
+        String actualReceiptId = receiptService.processReceipt(receiptWithKlarbrunn);
+
+        // Assert that the returned receipt ID is not null
+        assertNotNull(actualReceiptId);
+
+        // Verify the interactions with the repository
+        verify(receiptRepository).setProcessingState(eq(actualReceiptId), eq(true));
+        verify(receiptRepository).saveReceipt(eq(actualReceiptId), any(Receipt.class), any(BigDecimal.class));
+        verify(receiptRepository).setProcessingState(eq(actualReceiptId), eq(false));
     }
 }
