@@ -1,5 +1,7 @@
 package com.fetch_rewards_challenge.receipt_processor.controller;
 
+import com.fetch_rewards_challenge.receipt_processor.dto.PointsResponse;
+import com.fetch_rewards_challenge.receipt_processor.dto.ReceiptResponse;
 import com.fetch_rewards_challenge.receipt_processor.model.Receipt;
 import com.fetch_rewards_challenge.receipt_processor.service.ReceiptService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,6 @@ import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/receipts")
@@ -26,34 +27,41 @@ public class ReceiptController {
         this.receiptService = receiptService;
     }
 
-    // POST endpoint to process the receipt
+    /**
+     * Processes a receipt and returns the receipt ID.
+     *
+     * @param receipt The receipt to process.
+     * @return A ResponseEntity containing the receipt ID.
+     */
     @PostMapping("/process")
-    public CompletableFuture<ResponseEntity<String>> processReceipt(@Valid @RequestBody Receipt receipt) {
-        CompletableFuture<String> receiptIdFuture = receiptService.processReceipt(receipt);
-        return receiptIdFuture.thenApply(receiptId ->
-                ResponseEntity.status(HttpStatus.CREATED).body(receiptId))
-                .exceptionally(ex -> ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Invalid receipt submitted"));
+    public ResponseEntity<ReceiptResponse> processReceipt(@Valid @RequestBody Receipt receipt) {
+        String receiptId = receiptService.processReceipt(receipt);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ReceiptResponse(receiptId));
     }
 
-    // GET endpoint to retrieve points by receipt ID
+    /**
+     * Retrieves the points awarded for a given receipt ID.
+     *
+     * @param id The ID of the receipt.
+     * @return A ResponseEntity containing the points awarded.
+     */
     @GetMapping("/{id}/points")
-    public ResponseEntity<Map<String, Object>> getPoints(@PathVariable String id) {
+    public ResponseEntity<?> getPoints(@PathVariable String id) {
         if (receiptService.isProcessing(id)) {
             // Return a response indicating that processing is still in progress
             Map<String, Object> response = new HashMap<>();
             response.put("status", "Processing");
-            return ResponseEntity.status(202).body(response);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         }
 
         BigDecimal points = receiptService.getPoints(id);
         if (points == null) {
-            return ResponseEntity.status(404).build(); // ID not found
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "id: " + id + "not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // ID not found
         }
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("points", points);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new PointsResponse(points));
     }
 
     // GET endpoint to retrieve receipt by receipt ID
@@ -64,12 +72,14 @@ public class ReceiptController {
             // Return a response indicating that processing is still in progress
             Map<String, Object> response = new HashMap<>();
             response.put("status", "Processing");
-            return ResponseEntity.status(202).body(response);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         }
 
         Receipt receipt = receiptService.getReceiptById(id);
         if (receipt == null) {
-            return ResponseEntity.status(404).build(); // ID not found
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "id: " + id + "not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // ID not found
         }
 
         Map<String, Object> response = new HashMap<>();

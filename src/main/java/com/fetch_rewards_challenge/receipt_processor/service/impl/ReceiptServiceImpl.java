@@ -25,7 +25,7 @@ public class ReceiptServiceImpl implements ReceiptService {
     }
 
     @Override
-    public CompletableFuture<String> processReceipt(Receipt receipt) {
+    public String processReceipt(Receipt receipt) {
         // Check if items are present in the receipt
         if (receipt.getItems() == null || receipt.getItems().isEmpty()) {
             throw new InvalidReceiptException("Receipt must contain at least one item.");
@@ -34,12 +34,12 @@ public class ReceiptServiceImpl implements ReceiptService {
         String receiptId = UUID.randomUUID().toString();
         receiptRepository.setProcessingState(receiptId, true);
 
-        BigDecimal points = calculatePoints(receipt);
-
-        receiptRepository.saveReceipt(receiptId, receipt, points);
-        receiptRepository.setProcessingState(receiptId, false);
-
-        return CompletableFuture.completedFuture(receiptId);
+        CompletableFuture.runAsync(() -> {
+            BigDecimal points = calculatePoints(receipt);
+            receiptRepository.saveReceipt(receiptId, receipt, points);
+            receiptRepository.setProcessingState(receiptId, false);
+        });
+        return receiptId;
     }
 
     @Override
