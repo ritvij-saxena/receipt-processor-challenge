@@ -14,7 +14,7 @@ A simple Java application that processes receipts and return points based on cer
 
 ## Technologies Used
 
-- Java 11
+- Java 17
 - Spring Boot
 - JUnit
 - Mockito
@@ -24,7 +24,7 @@ A simple Java application that processes receipts and return points based on cer
 
 ### Prerequisites
 
-- Java 11 or higher
+- Java 17
 - Maven
 - Docker (optional, for containerization)
 
