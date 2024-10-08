@@ -46,10 +46,10 @@ A simple Java application that processes receipts and return points based on cer
     mvn spring-boot:run
     ```
 ### Running tests
-To run the tests, use the command
-    ```bash
-    mvn test
-    ```
+To run the tests, use the command:
+```bash
+  mvn test
+```
 
 ### Docker
 #### Building the Docker Image

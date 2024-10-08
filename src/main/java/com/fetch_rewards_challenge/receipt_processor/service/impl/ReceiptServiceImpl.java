@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -118,7 +119,7 @@ public class ReceiptServiceImpl implements ReceiptService {
         BigDecimal points = BigDecimal.ZERO;
 
         if (description.length() % 3 == 0) {
-            points = points.add(price.multiply(BigDecimal.valueOf(0.2)).setScale(0, BigDecimal.ROUND_UP));
+            points = points.add(price.multiply(BigDecimal.valueOf(0.2)).setScale(0, RoundingMode.UP));
         }
 
         return points;
