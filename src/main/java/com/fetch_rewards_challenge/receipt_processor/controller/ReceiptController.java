@@ -4,13 +4,19 @@ import com.fetch_rewards_challenge.receipt_processor.dto.PointsResponse;
 import com.fetch_rewards_challenge.receipt_processor.dto.ReceiptResponse;
 import com.fetch_rewards_challenge.receipt_processor.model.Receipt;
 import com.fetch_rewards_challenge.receipt_processor.service.ReceiptService;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +24,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/receipts")
 @Validated
+@Slf4j
 public class ReceiptController {
 
     private final ReceiptService receiptService;
@@ -33,11 +40,13 @@ public class ReceiptController {
      * @param receipt The receipt to process.
      * @return A ResponseEntity containing the receipt ID.
      */
+
     @PostMapping("/process")
-    public ResponseEntity<ReceiptResponse> processReceipt(@Valid @RequestBody Receipt receipt) {
+    public ResponseEntity<?> processReceipt(@RequestBody @Valid Receipt receipt) {
         String receiptId = receiptService.processReceipt(receipt);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ReceiptResponse(receiptId));
     }
+
 
     /**
      * Retrieves the points awarded for a given receipt ID.
@@ -47,6 +56,7 @@ public class ReceiptController {
      */
     @GetMapping("/{id}/points")
     public ResponseEntity<?> getPoints(@PathVariable String id) {
+        log.info("In " + getClass().getName() + ":" + "getPoints");
         if (receiptService.isProcessing(id)) {
             // Return a response indicating that processing is still in progress
             Map<String, Object> response = new HashMap<>();
@@ -68,6 +78,7 @@ public class ReceiptController {
     // out of scope of the assignment
     @GetMapping("/{id}/receipt")
     public ResponseEntity<Map<String, Object>> getReceipt(@PathVariable String id) {
+        log.info("In " + getClass().getName() + ":" + "getReceipt");
         if (receiptService.isProcessing(id)) {
             // Return a response indicating that processing is still in progress
             Map<String, Object> response = new HashMap<>();
