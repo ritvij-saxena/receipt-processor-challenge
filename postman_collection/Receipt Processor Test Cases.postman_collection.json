@@ -292,7 +292,7 @@
 					"script": {
 						"exec": [
 							"pm.test(\"Points are equal\", function() {",
-							"    pm.expect(pm.response.json().points).equal(52)",
+							"    pm.expect(pm.response.json().points).equal(15)",
 							"    ",
 							"});"
 						],
@@ -370,7 +370,7 @@
 					"script": {
 						"exec": [
 							"pm.test(\"Points are equal\", function() {",
-							"    pm.expect(pm.response.json().points).equal(56)",
+							"    pm.expect(pm.response.json().points).equal(14)",
 							"    ",
 							"});"
 						],
