@@ -65,10 +65,51 @@ docker run -p 8080:8080 receipt-processor
 ```
 
 
-### Endpoints
+## Endpoints
 You can interact with the application via the following endpoints [(refer challenge for more details)](https://github.com/fetch-rewards/receipt-processor-challenge?tab=readme-ov-file#summary-of-api-specification):
 
 - `POST /receipts: Add a new receipt`
 - `GET /receipts/{id}/points: Retrieve points for a given receipt id`
 - `GET /receipts/{id}/receipt: Retrieve a receipt for a given receipt id` 
   Note: (out-of-scope) (Added just for the sake of it)
+
+## Testing with Postman
+A Postman collection/test suite file, `Receipt Processor Test Cases.postman_collection.json`, is included with the project. You can import this file into Postman as a collection. Once imported, ensure the server is running and execute the test suite to validate the application's functionality. 
+
+![img.png](img.png)
+
+Helpful Links:
+- [Importing data in Postman](https://learning.postman.com/docs/getting-started/importing-and-exporting/importing-data/)
+- [Running a Test suite](https://learning.postman.com/docs/tests-and-scripts/run-tests/run-tests-manually/)
+- [Postman Learning Centre](https://learning.postman.com/docs/introduction/overview/)
+
+### Improvements (Food for thought)
+#### 1. Connectivity to Spring Cloud
+By integrating with Spring Cloud to support microservices architecture, Spring Boot could be enhanced even more. The app would be more scalable with features like centralized setup (Spring Cloud Config), load balancing (with Netflix Eureka and Ribbon), and service discovery.
+
+
+#### 2. Improvements to Unit and Integration Testing
+The project could use Spring Test for end-to-end integration tests, mocking HTTP requests and responses more successfully with the help of tools like WireMock, while JUnit and Mockito are used for unit testing.
+
+#### 3. Integration with Swagger
+
+To automatically generate interactive API documentation and to facilitate endpoint testing from the browser or Postman, incorporate Swagger into your API documentation.
+
+#### 4. Kubernetes & Docker
+
+Utilizing Kubernetes for deployment will further containerize the application and guarantee that it can grow across numerous instances. Additionally, you may incorporate liveness probes and health checks to improve microservices monitoring.
+
+#### 5. Persistent Data Store
+
+Integrate a persistent database such as MySQL, PostgreSQL, or MongoDB to store receipts and points. This will ensure data survives application restarts and scales better.
+
+We can certainly explore the trade-offs and find the "mostly" correct answer for this problem.
+
+## Acknowledgment
+
+I want to extend a big thank you to Fetch Rewards for offering such an awesome learning experience. This challenge has really helped me deepen my understanding of machine learning workflows—from data preprocessing and modeling to deployment and UI design. It’s been both tough and rewarding, providing a great chance to apply theory to a real-world problem.
+
+I’d love the opportunity to interview with Fetch!
+  
+
+
