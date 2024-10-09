@@ -107,9 +107,7 @@ We can certainly explore the trade-offs and find the "mostly" correct answer for
 
 ## Acknowledgment
 
-I want to extend a big thank you to Fetch Rewards for offering such an awesome learning experience. This challenge has really helped me deepen my understanding of machine learning workflows—from data preprocessing and modeling to deployment and UI design. It’s been both tough and rewarding, providing a great chance to apply theory to a real-world problem.
-
-I’d love the opportunity to interview with Fetch!
-  
+I want to extend a big thank you to Fetch Rewards for offering such an awesome learning experience.
+I’d love the opportunity to interview with Fetch!  
 
 
