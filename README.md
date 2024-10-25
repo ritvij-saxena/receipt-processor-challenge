@@ -88,7 +88,7 @@ You can interact with the application via the following endpoints [(refer challe
 A Postman collection/test suite file, `Receipt Processor Test Cases.postman_collection.json`, is included with the project. You can import this file into Postman as a collection. Once imported, ensure the server is running and execute the test suite to validate the application's functionality. 
 
 ![img.png](img.png)
-**PLEASE NOTE: This above POSTMAN test suite does not work after V1 of this version**
+**PLEASE NOTE:** The above test will work only with V1. V2 Collections will added soon.
 
 Helpful Links:
 - [Importing data in Postman](https://learning.postman.com/docs/getting-started/importing-and-exporting/importing-data/)
