@@ -16,11 +16,10 @@ public class ReceiptRepository {
     private final ConcurrentHashMap<String, Boolean> processingStates = new ConcurrentHashMap<>();
 
     // Save receipt and its points
-    public String saveReceipt(String id, Receipt receipt, BigDecimal points) {
+    public synchronized void saveReceipt(String id, Receipt receipt, BigDecimal points) {
         log.info("In " + getClass().getName() + ":" + "saveReceipt");
         receipts.put(id, receipt);
         receiptPoints.put(id, points);
-        return id;
     }
 
     // Retrieve points by receipt ID
@@ -36,7 +35,7 @@ public class ReceiptRepository {
     }
 
     // Set processing state of a receipt
-    public void setProcessingState(String id, boolean isProcessing) {
+    public synchronized void setProcessingState(String id, boolean isProcessing) {
         log.info("In " + getClass().getName() + ":" + "setProcessingState");
         processingStates.put(id, isProcessing);
     }

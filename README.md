@@ -6,12 +6,21 @@ A simple Java application that processes receipts and return points based on cer
 
 ## Features
 
-- Add and save receipts
-- Maintain processing state for each receipt
-- Award points for a given receipt based on the rules mentioned above.
-- Simple command-line interface for testing
-- Added asynchronous processing of receipts
-
+- V1
+  - Add and save receipts
+  - Maintain processing state for each receipt
+  - Award points for a given receipt based on the rules mentioned above.
+  - Simple command-line interface for testing
+  - Added asynchronous processing of receipts
+- V2
+  - In this version, I added a new feature where for every first, second, and third receipts submitted, we award the user with 1000, 500, 250 additional points respectively.
+  - This changes the existing endpoints.
+    - **POST** /receipts/process becomes POST /receipts/process?user_id=<user_id>
+    - Added a new controller called user_controller.py
+      - POST /users/adduser
+      - GET /users/getuser
+  - Refactored Code
+  
 ## Technologies Used
 
 - Java 17
@@ -70,13 +79,16 @@ You can interact with the application via the following endpoints [(refer challe
 
 - `POST /receipts: Add a new receipt`
 - `GET /receipts/{id}/points: Retrieve points for a given receipt id`
-- `GET /receipts/{id}/receipt: Retrieve a receipt for a given receipt id` 
+- `GET /receipts/{id}: Retrieve a receipt for a given receipt id` 
   Note: (out-of-scope) (Added just for the sake of it)
+- `POST /users/adduser: Add a new user.`
+- `GET /useres/getuser: Retrieve a user's details for given user_id`
 
 ## Testing with Postman
 A Postman collection/test suite file, `Receipt Processor Test Cases.postman_collection.json`, is included with the project. You can import this file into Postman as a collection. Once imported, ensure the server is running and execute the test suite to validate the application's functionality. 
 
 ![img.png](img.png)
+**PLEASE NOTE: This above POSTMAN test suite does not work after V1 of this version**
 
 Helpful Links:
 - [Importing data in Postman](https://learning.postman.com/docs/getting-started/importing-and-exporting/importing-data/)

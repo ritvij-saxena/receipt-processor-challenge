@@ -2,8 +2,11 @@ package com.fetch_rewards_challenge.receipt_processor.service.impl;
 
 import com.fetch_rewards_challenge.receipt_processor.model.Item;
 import com.fetch_rewards_challenge.receipt_processor.model.Receipt;
+import com.fetch_rewards_challenge.receipt_processor.model.User;
 import com.fetch_rewards_challenge.receipt_processor.repository.ReceiptRepository;
+import com.fetch_rewards_challenge.receipt_processor.repository.UserRepository;
 import com.fetch_rewards_challenge.receipt_processor.service.ReceiptService;
+import com.fetch_rewards_challenge.receipt_processor.utils.BonusRewardManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -20,14 +24,16 @@ import java.util.concurrent.CompletableFuture;
 public class ReceiptServiceImpl implements ReceiptService {
 
     private final ReceiptRepository receiptRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public ReceiptServiceImpl(ReceiptRepository receiptRepository) {
+    public ReceiptServiceImpl(ReceiptRepository receiptRepository, UserRepository userRepository) {
         this.receiptRepository = receiptRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
-    public String processReceipt(Receipt receipt) {
+    public String processReceipt(String userId, Receipt receipt) {
         log.debug("In " + getClass().getName() + ":" + "processReceipt");
         String receiptId = UUID.randomUUID().toString();
         log.debug("ReceiptId Assigned: " + receiptId);
@@ -35,10 +41,14 @@ public class ReceiptServiceImpl implements ReceiptService {
         log.info("Setting ProcessingState=(receiptId={}, isProcessing={}",receiptId, false);
 
         CompletableFuture.runAsync(() -> {
-            BigDecimal points = calculatePoints(receipt);
+            BigDecimal points = calculatePoints(receipt)
+                    .add(getPointsForNewUser(userId));
             log.info("points={}", points);
             log.info("Saving receipt: (receiptId={}, receipt={}, points={})",receiptId, receipt, points);
             receiptRepository.saveReceipt(receiptId, receipt, points);
+            User currentUser = userRepository.getUser(userId);
+            currentUser.setTotalReceiptSubmitted(currentUser.getTotalReceiptSubmitted() + 1);
+            userRepository.updateUser(currentUser);
             log.info("Setting ProcessingState=(receiptId={}, isProcessing={}",receiptId, false);
             receiptRepository.setProcessingState(receiptId, false);
         });
@@ -67,11 +77,11 @@ public class ReceiptServiceImpl implements ReceiptService {
     public BigDecimal calculatePoints(Receipt receipt) {
         log.info("In " + getClass().getName() + ":" + "calculatePoints");
         BigDecimal points = BigDecimal.ZERO;
-        points = points.add(calculateRetailerPoints(receipt.getRetailer()));
-        points = points.add(calculateTotalPoints(receipt.getTotal()));
-        points = points.add(calculateItemPoints(receipt.getItems()));
-        points = points.add(calculateDayPoints(receipt.getPurchaseDate()));
-        points = points.add(calculateTimePoints(receipt.getPurchaseTime()));
+        points = points.add(calculateRetailerPoints(receipt.getRetailer()))
+                .add(calculateTotalPoints(receipt.getTotal()))
+                .add(calculateItemPoints(receipt.getItems()))
+                .add(calculateDayPoints(receipt.getPurchaseDate()))
+                .add(calculateTimePoints(receipt.getPurchaseTime()));
         return points;
     }
 
@@ -136,5 +146,22 @@ public class ReceiptServiceImpl implements ReceiptService {
         String[] timeParts = purchaseTime.split(":");
         int hour = Integer.parseInt(timeParts[0]);
         return (hour >= 14 && hour < 16) ? BigDecimal.valueOf(10) : BigDecimal.ZERO;
+    }
+
+    private BigDecimal getPointsForNewUser(String userId) {
+        BigDecimal points = BigDecimal.ZERO;
+        User currentUser = userRepository.getUser(userId);
+        if (Objects.isNull(currentUser)) {
+            try {
+                throw new Exception("User Not Found");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        points = points.add(BigDecimal
+                .valueOf(BonusRewardManager
+                        .getRewardForUserReceipts(currentUser
+                                .getTotalReceiptSubmitted())));
+        return points;
     }
 }

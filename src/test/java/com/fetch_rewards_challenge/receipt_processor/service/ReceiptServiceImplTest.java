@@ -12,6 +12,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -81,7 +82,8 @@ public class ReceiptServiceImplTest {
 
     @Test
     public void testProcessReceipt() {
-        receiptService.processReceipt(receiptWithKlarbrunn);
+        String userId = UUID.randomUUID().toString();
+        receiptService.processReceipt(userId, receiptWithKlarbrunn);
         verify(receiptRepository, times(1)).setProcessingState(anyString(), eq(true));
     }
 
@@ -108,7 +110,8 @@ public class ReceiptServiceImplTest {
     @Test
     public void testProcessReceipt_2() throws InterruptedException {
         // Act: Process the receipt
-        String actualReceiptId = receiptService.processReceipt(receiptWithKlarbrunn);
+        String userId = UUID.randomUUID().toString();
+        String actualReceiptId = receiptService.processReceipt(userId, receiptWithKlarbrunn);
 
         // Assert that the returned receipt ID is not null
         assertNotNull(actualReceiptId);
