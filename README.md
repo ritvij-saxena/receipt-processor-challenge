@@ -13,7 +13,7 @@ A simple Java application that processes receipts and return points based on cer
   - Simple command-line interface for testing
   - Added asynchronous processing of receipts
 - V2
-  - In this version, I added a new feature where for every first, second, and third receipts submitted, we award the user with 1000, 500, 250 additional points respectively.
+  - In this version, I added a new feature where for only the first, second, and third receipts submitted, we award the user with 1000, 500, 250 additional points respectively.
   - This changes the existing endpoints.
     - **POST** /receipts/process becomes POST /receipts/process?user_id=<user_id>
     - Added a new controller called user_controller.py
